@@ -2,9 +2,9 @@ from flask import Flask
 from flask_migrate import Migrate
 from flask_cors import CORS
 
-from app.routes import api
-from app.models.models import db
-from app.config import Configuration
+from .routes import api
+from .models.models import db
+from .config import Configuration
 
 app = Flask(__name__)
 CORS(app)

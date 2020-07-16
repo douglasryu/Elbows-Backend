@@ -1,12 +1,12 @@
-from flask import BluePrint, request, jsonify
+from flask import Blueprint, request, jsonify
 from datetime import date
 import jwt
 
-from ..models.models import db, User, Post, Comment, Like, Follow
+from ..models import db, User, Post, Comment, Like, Follow
 from ..config import Configuration
 
 
-bp = BluePrint("api", __name__, url_prefix="/api")
+bp = Blueprint("api", __name__, url_prefix="/api")
 
 
 # User routes
@@ -51,7 +51,7 @@ def create_post():
 
 
 @bp.route("/posts/<int:userId>")
-def get_post(userId):
+def get_user_post(userId):
     try:
         fetched_posts = Post.query.filter(Post.user_id == userId).all()
         posts = [post.to_dict() for post in fetched_posts]
@@ -59,6 +59,22 @@ def get_post(userId):
     except AssertionError as message:
         print(str(message))
         return jsonify({"error": str(message)}), 400
+
+
+@bp.route("/posts/<int:userId>")
+def get_followee_posts():
+    follows = Follow.query.filter(Follow.user_id == userId).all()
+    followee_list = [follow.follow_user_id for follow in follows]
+
+    for followee_id in followee_list:
+        followee_posts = Post.query.filter(Post.user_id == followee).all()
+
+
+# @bp.route("/products")
+# def get_all_products():
+#     fetchedProducts = Product.query.all()
+#     products = [product.to_dict() for product in fetchedProducts]
+#     return {"products": products}
 
 
 # Comment routes
