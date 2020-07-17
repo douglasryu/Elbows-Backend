@@ -2,7 +2,13 @@ from flask import Blueprint, request, jsonify
 from datetime import date
 import jwt
 
-from ..models import db, User, Post, Comment, Like, Follow
+from ..models import db
+from ..models.users import User
+from ..models.posts import Post
+from ..models.comments import Comment
+from ..models.likes import Like
+from ..models.follows import Follow
+
 from ..config import Configuration
 
 
@@ -61,20 +67,13 @@ def get_user_post(userId):
         return jsonify({"error": str(message)}), 400
 
 
-@bp.route("/posts/<int:userId>")
-def get_followee_posts():
-    follows = Follow.query.filter(Follow.user_id == userId).all()
-    followee_list = [follow.follow_user_id for follow in follows]
+# @bp.route("/posts/<int:userId>")
+# def get_followee_posts():
+#     follows = Follow.query.filter(Follow.user_id == userId).all()
+#     followee_list = [follow.follow_user_id for follow in follows]
 
-    for followee_id in followee_list:
-        followee_posts = Post.query.filter(Post.user_id == followee).all()
-
-
-# @bp.route("/products")
-# def get_all_products():
-#     fetchedProducts = Product.query.all()
-#     products = [product.to_dict() for product in fetchedProducts]
-#     return {"products": products}
+#     for followee_id in followee_list:
+#         followee_posts = Post.query.filter(Post.user_id == followee).all()
 
 
 # Comment routes

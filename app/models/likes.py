@@ -9,9 +9,9 @@ class Like(db.Model):
     post_id = db.Column(db.Integer, db.ForeignKey('posts.id'))
     comment_id = db.Column(db.Integer, db.ForeignKey('comments.id'))
 
-    user = db.relationship("User", back_populates="likes")
-    post = db.relationship("Post", back_populates="likes")
-    comment = db.relationship("Comment", back_populates="likes")
+    user = db.relationship("User", back_populates="like")
+    post = db.relationship("Post", back_populates="like")
+    comment = db.relationship("Comment", back_populates="like")
 
     def to_dict(self):
         return {
