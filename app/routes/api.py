@@ -19,6 +19,9 @@ bp = Blueprint("api", __name__, url_prefix="/api")
 @bp.route("/users", methods=["POST"])
 def signup_user():
     data = request.json
+    check_existing = User.query.filter(User.email == data['email']).first()
+    if check_existing:
+        return {"error": "Entered email already exists"}, 400
     if not data["email"]:
         return {"error": "Please provide a email"}, 400
     if not data["name"]:
