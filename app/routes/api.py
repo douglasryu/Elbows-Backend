@@ -19,7 +19,20 @@ bp = Blueprint("api", __name__, url_prefix="/api")
 @bp.route("/users", methods=["POST"])
 def signup_user():
     data = request.json
-    user = User(name=data["name"], username=data["userName"], email=data['email'], bio=data["bio"],
+    if not data["email"]:
+        return {"error": "Please provide a email"}, 400
+    if not data["name"]:
+        return {"error": "Please provide a your full name"}, 400
+    if not data["username"]:
+        return {"error": "Please provide a username"}, 400
+    if not data["password"]:
+        return {"error": "Please provide a password"}, 400
+    if not data["confirmPassword"]:
+        return {"error": "Please confirm your password"}, 400
+    if data["password"] != data["confirmPassword"]:
+        return {"error": "Passwords do not match"}, 400
+        
+    user = User(name=data["name"], username=data["username"], email=data['email'], bio=data["bio"],
                 password=data['password'], created_at=date.today(), updated_at=date.today())
     db.session.add(user)
     db.session.commit()
