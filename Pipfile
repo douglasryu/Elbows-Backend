@@ -18,6 +18,8 @@ psycopg2-binary = "*"
 sqlalchemy = "*"
 pyjwt = "*"
 flask-cors = "*"
+boto3 = "*"
+awscli = "*"
 
 [requires]
 python_version = "3.8"
