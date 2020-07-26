@@ -105,7 +105,7 @@ def get_user_post(userId):
 def create_comment():
     data = request.json
     try:
-        comment = Comment(user_id=data["userId"], post_id=data["postId"],
+        comment = Comment(user_id=data["userId"], user_name=data["userName"], post_id=data["postId"],
                           comment_body=data["commentBody"], created_at=date.today(), updated_at=date.today())
         db.session.add(comment)
         db.session.commit()

@@ -7,6 +7,7 @@ class Comment(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    user_name = db.Column(db.String, nullable=False)
     post_id = db.Column(db.Integer, db.ForeignKey('posts.id'), nullable=False)
     comment_body = db.Column(db.String, nullable=False)
     created_at = db.Column(db.DateTime(timezone=True),
@@ -22,6 +23,7 @@ class Comment(db.Model):
         return {
             "id": self.id,
             "userId": self.user_id,
+            "userName": self.user_name,
             "postId": self.post_id,
             "commentBody": self.comment_body,
             "created_at": self.created_at,
