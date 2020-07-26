@@ -35,7 +35,7 @@ def signup_user():
     if data["password"] != data["confirmPassword"]:
         return {"error": "Passwords do not match"}, 400
         
-    user = User(name=data["name"], username=data["username"], email=data['email'], bio=data["bio"],
+    user = User(name=data["name"], username=data["username"], email=data['email'], profile_pic_url=data["profilePicUrl"], bio=data["bio"],
                 password=data['password'], created_at=date.today(), updated_at=date.today())
     db.session.add(user)
     db.session.commit()
@@ -78,6 +78,65 @@ def create_post():
     except AssertionError as message:
         print(str(message))
         return jsonify({"error": str(message)}), 400
+
+
+@bp.route("/main/<int:userId>")
+def get_mainpage_post(userId):
+    post_list = []
+    follows = Follow.query.filter(Follow.user_id == userId).all()
+    for follow in follows:
+        posts = Post.query.filter(Post.user_id == follow.follow_user_id)
+        
+        found_users = {}
+        for post in posts:
+            post_dict = post.to_dict()
+            if post.user_id in found_users:
+                post_dict["user_info"] = found_users[post.user_id]
+            else:
+                user = post.user
+                found_users[post.user_id] = {"username": user.username, "profilePicUrl": user.profile_pic_url}
+                post_dict["user_info"] = found_users[post.user_id]
+
+            likes = Like.query.filter(Like.post_id == post.id).all()
+            post_dict['numLikes'] = len(likes)
+            likes_list = []
+            for like in likes:
+                likes_list.append(like.user.to_dict())
+            post_dict['likesList'] = likes_list
+
+            post_list.append(post_dict)
+    return {"result": post_list}   
+            
+            # comments = post.comments
+            # original_comments = comments
+            # if len(comments) > 2:
+            #     comments = comments[-2:]
+            # comments_list = []
+            # for comment in comments:
+            #     comment_dict = comment.to_dict()
+            #     comment_likes = Like.query.filter(Like.likeable_type == "comment").filter(Like.likeable_id == comment.id).all()
+            #     user_list = []
+            #     for like in comment_likes:
+            #         username = like.user.to_dict()
+            #         user_list.append(username)
+
+            #     comment_dict['likes_comment'] = user_list
+
+            #     if comment.user_id in found_users:
+            #         comment_dict["username"] = found_users[comment.user_id]
+            #     else:
+            #         user = comment.user
+            #         found_users[user.id] = {"username": user.username, "profilePic": user.profile_image_url}
+            #         comment_dict["username"] = found_users[comment.user_id]
+
+            #     comments_list.append(comment_dict)
+
+            # post_dict["comments"] = {"total": len(original_comments), "commentsList": comments_list }
+
+            # post_list.append(post_dict)
+            # if len(post_list) == 3:
+            #     return {"posts": post_list}
+    # return {"posts": post_list}
 
 
 @bp.route("/posts/<int:userId>")

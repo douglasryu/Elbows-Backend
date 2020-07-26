@@ -11,6 +11,7 @@ class User(db.Model):
     name = db.Column(db.String(100), nullable=False)
     username = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(100), nullable=False, unique=True)
+    profile_pic_url = db.Column(db.String(200))
     bio = db.Column(db.String(1000))
     hashed_password = db.Column(db.String(128), nullable=False)
     created_at = db.Column(db.DateTime(timezone=True),
@@ -42,6 +43,7 @@ class User(db.Model):
             "name": self.name,
             "username": self.username,
             "email": self.email,
+            "profilePicUrl": self.profile_pic_url,
             "bio": self.bio,
             "createdAt": self.created_at,
         }
