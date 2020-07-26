@@ -18,13 +18,14 @@ def create_presigned_post(object_name, bucket_name=BUCKET,
                           fields=None, conditions=None, expiration=3600):
     s3_client = boto3.client('s3')
     try:
-        object_name = f"uploads/{randrange(1000)}.jpg"
+        file_name, mime_type = object_name.split(".")
+        object_name = f"uploads/{randrange(1000)}.{mime_type}"
         response = s3_client.generate_presigned_post(bucket_name,
                                                      object_name,
                                                      Fields=fields,
                                                      Conditions=conditions,
                                                      ExpiresIn=expiration)
-        response["fileUrl"] = f"https://elbows.s3.us-east-2.amazonaws.com/{object_name}.jpg"
+        response["fileUrl"] = f"https://elbows.s3.us-east-2.amazonaws.com/{object_name}"
     except ClientError as e:
         logging.error(e)
         return None

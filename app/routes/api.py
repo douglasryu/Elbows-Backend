@@ -43,6 +43,14 @@ def signup_user():
     return {'access_token': access_token.decode('UTF-8'), 'user': user.to_dict()}
 
 
+@bp.route("/users/<userId>")
+def get_user_name(userId):
+    # data = request.json
+    user = User.query.filter(User.id == int(userId)).first()
+    user_name = user.name
+    return {"userName": user_name}
+
+
 @bp.route("/users/session", methods=['POST'])
 def signin_user():
     data = request.json
