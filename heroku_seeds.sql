@@ -1,10 +1,12 @@
-DELETE FROM follows;
-DELETE FROM likes;
-DELETE FROM comments;
-DELETE FROM posts;
-DELETE FROM users;
+-- DELETE FROM follows;
+-- DELETE FROM likes;
+-- DELETE FROM comments;
+-- DELETE FROM posts;
+-- DELETE FROM users;
 
-INSERT INTO users (name, username, email, bio, hashed_password, created_at, updated_at)
+INSERT INTO users (name, username, email, profile_pic_url, bio, hashed_password, created_at, updated_at)
 VALUES
-    ('Demo User', 'Guest', 'demouser@demouser.com', 'Hi, welcome to Elbows. Social network, the safe way.', 'pbkdf2:sha256:150000$8Hni6iRk$355984f782e51532dadccc50c0a90c933b2be5ebae316dbdd389cd09c0e68237');
+    ('Demo User', 'Guest', 'demouser@demouser.com', 'https://elbows.s3.us-east-2.amazonaws.com/uploads/avatar.jpg', 'Welcome to Elbows, safe and social.', 'pbkdf2:sha256:150000$LKqxHRfm$73e1bf621c7891edb619763031a5fa74538662f21e4572c316bdfdc42b89eb07', new Date(2020-07-20), new Date(2020-07-20)),
+    ('Douglas Ryu', 'douglasryu', 'douglasryu@hotmail.com', 'https://elbows.s3.us-east-2.amazonaws.com/uploads/avatar.jpg', 'Welcome to Elbows, safe and social.', 'pbkdf2:sha256:150000$RCtcoxz2$856023dcbdf4a13f61109d8419148a65ac7dbbcc8235083b29d4db2c20c7ee39', new Date(2020-07-20), new Date(2020-07-20));
 
+INSERT INTO posts (user_id, location, post_image, post_body, created_at, update_at)

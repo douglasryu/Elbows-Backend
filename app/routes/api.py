@@ -152,7 +152,7 @@ def get_mainpage_post(userId):
                     comment_dict["username"] = found_users[comment.user_id]
                 else:
                     user = comment.user
-                    found_users[user.id] = {"username": user.username, "profilePic": user.profile_pic_url}
+                    found_users[user.id] = {"username": user.username, "profilePicUrl": user.profile_pic_url}
                     comment_dict["username"] = found_users[comment.user_id]
 
                 comments_list.append(comment_dict)
@@ -160,8 +160,7 @@ def get_mainpage_post(userId):
             post_dict["comments"] = { "commentsList": comments_list }
 
             post_list.append(post_dict)
-            new_list = post_list
-    return {"result": new_list}
+    return {"result": post_list}
 
 
 @bp.route("/posts/<int:userId>")
@@ -175,13 +174,11 @@ def get_user_post(userId):
         return jsonify({"error": str(message)}), 400
 
 
-# @bp.route("/posts/<int:userId>")
-# def get_followee_posts():
-#     follows = Follow.query.filter(Follow.user_id == userId).all()
-#     followee_list = [follow.follow_user_id for follow in follows]
-
-#     for followee_id in followee_list:
-#         followee_posts = Post.query.filter(Post.user_id == followee).all()
+@bp.route("/posts")
+def get_all_posts():
+    posts = Post.query.all()
+    posts_list = [post.to_dict() for post in posts]
+    return {"posts": posts_list}
 
 
 # Comment routes
