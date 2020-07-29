@@ -19,7 +19,7 @@ def create_presigned_post(object_name, bucket_name=BUCKET,
     s3_client = boto3.client('s3')
     try:
         file_name, mime_type = object_name.split(".")
-        object_name = f"uploads/{randrange(1000)}.{mime_type}"
+        object_name = f"uploads/{randrange(10000)}.{mime_type}"
         response = s3_client.generate_presigned_post(bucket_name,
                                                      object_name,
                                                      Fields=fields,
@@ -29,32 +29,7 @@ def create_presigned_post(object_name, bucket_name=BUCKET,
     except ClientError as e:
         logging.error(e)
         return None
-    # print(response)
     return response
-
-
-# @bp.route("/<int:userId>", methods=["POST"])
-# def upload_post(userId):
-#     if request.method == "POST":
-#         print(request.files['file'])
-#         f = request.files['file']
-#         f.save(os.path.join(UPLOAD_FOLDER, f.filename))
-#         upload_file(f"uploads/{f.filename}", BUCKET)
-#         # image_url = f"https://elbows.s3.us-east-2.amazonaws.com/uploads/{f.filename}"
-
-#         return {"post": "success"}
-
-
-
-# def upload_file(file_name, bucket):
-#     """
-#     Function to upload a file to an S3 bucket
-#     """
-#     object_name = file_name
-#     s3_client = boto3.client('s3')
-#     response = s3_client.upload_file(file_name, bucket, object_name)
-
-#     return response
 
 
 

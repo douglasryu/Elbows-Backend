@@ -64,6 +64,28 @@ def signin_user():
     else:
         return {"error": "Incorrect password"}, 401
 
+
+@bp.route("/users/update/<int:userId>", methods=['POST'])
+def update_user(userId):
+    data = request.json
+    user = User.query.filter(User.id == userId).first()
+    # old_user = user.to_dict()
+    if data["newProfilePicUrl"]:
+        if user.profile_pic_url != data["newProfilePicUrl"]:
+            user.profile_pic_url = data["newProfilePicUrl"]
+    if data["newFullName"]:
+        if user.name != data["newFullName"]:
+            user.name = data["newFullName"]
+    if data["newUserName"]:
+        if user.username != data["newUserName"]:
+            user.username = data["newUserName"]
+    if data["newBio"]:
+        if user.bio != data["newBio"]:
+            user.bio = data["newBio"]
+    db.session.commit()
+    return {"result": "User information updated successfully!"}
+    
+
 @bp.route('/userinfo/<userId>')
 def get_user_information(userId):
     post_count = Post.query.filter(Post.user_id == userId).count()
