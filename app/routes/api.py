@@ -196,6 +196,21 @@ def get_user_post(userId):
         return jsonify({"error": str(message)}), 400
 
 
+@bp.route("/posts/favorites/<int:userId>")
+def get_liked_posts(userId):
+    post_list = []
+    try:
+        liked_posts = Like.query.filter(Like.user_id == userId).all()
+        for liked_post in liked_posts:
+            post = Post.query.filter(Post.id == liked_post.post_id).first()
+            post_list.append(post.to_dict())
+        # posts = [post.to_dict() for post in liked_posts]
+        return jsonify({"posts": post_list})
+    except AssertionError as message:
+        print(str(message))
+        return jsonify({"error": str(message)}), 400
+
+
 @bp.route("/posts")
 def get_all_posts():
     posts = Post.query.all()
@@ -235,6 +250,9 @@ def get_comment(postId):
 def create_like():
     data = request.json
     try:
+        # if data["postId"]:
+        #     target_post = Post.query.filter(Post.id == data["postId"])
+        # check_existing =     
         like = Like(
             user_id=data["userId"], post_id=data["postId"], comment_id=data["commentId"])
         db.session.add(like)
