@@ -80,8 +80,8 @@ def get_user_information(userId):
     for follower in followers:
         followers_list.append(follower.to_dict())
 
-    for follower in follows:
-        follows_list.append(follower.to_dict())
+    for follow in follows:
+        follows_list.append(follow.to_dict())
 
     num_followers = len(followers_list)
     num_follows = len(follows_list)
@@ -249,6 +249,9 @@ def get_comment_like(commentId):
 @bp.route("/follows", methods=["POST"])
 def create_follow():
     data = request.json
+    check_follow = Follow.query.filter(Follow.user_id == data['userId']).filter(Follow.follow_user_id == data['followUserId']).first()
+    if check_follow:
+        return {"error": "Already following!"}, 400
     try:
         follow = Follow(user_id=data["userId"],
                         follow_user_id=data["followUserId"])
