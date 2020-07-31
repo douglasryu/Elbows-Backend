@@ -139,6 +139,8 @@ def get_user_notification(userId):
         liked_list = liked_list[-4:]
     if len(commented_list) > 4:
         commented_list = commented_list[-4:]
+    liked_list.reverse()
+    commented_list.reverse()
     notification_dict["likes"] = liked_list
     notification_dict["comments"] = commented_list
     check_follows = Follow.query.filter(Follow.follow_user_id == userId).all()
@@ -162,6 +164,21 @@ def create_post():
         db.session.add(post)
         db.session.commit()
         return jsonify({"post": "post created"})
+    except AssertionError as message:
+        print(str(message))
+        return jsonify({"error": str(message)}), 400
+
+
+@bp.route("/posts/delete/<int:postId>")
+def delete_post(postId):
+    try:
+        post_to_delete = Post.query.filter(Post.id == postId).first()
+        comments_to_delete = Comment.query.filter(Comment.post_id == postId).all()
+        for comment in comments_to_delete:
+            db.session.delete(comment)
+        db.session.delete(post_to_delete)
+        db.session.commit()
+        return jsonify({"delete": "delete success"})
     except AssertionError as message:
         print(str(message))
         return jsonify({"error": str(message)}), 400
