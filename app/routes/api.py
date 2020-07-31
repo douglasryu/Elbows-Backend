@@ -86,7 +86,7 @@ def update_user(userId):
     return {"result": "User information updated successfully!"}
     
 
-@bp.route('/userinfo/<userId>')
+@bp.route('/userinfo/<int:userId>')
 def get_user_information(userId):
     post_count = Post.query.filter(Post.user_id == userId).count()
     followers = Follow.query.filter(Follow.follow_user_id == userId).all()
@@ -116,6 +116,40 @@ def get_user_information(userId):
         post_dict["comment_count"] = num_comments
         post_list.append(post_dict)
     return {"num_posts": post_count, "posts": post_list, "followersList": followers_list, "numFollower": num_followers, "followsList": follows_list, "numFollow": num_follows, "user": user.to_dict() }
+
+
+@bp.route("/notification/<int:userId>")
+def get_user_notification(userId):
+    notification_dict = {}
+    liked_list = []
+    commented_list = []
+    follow_list = []
+    user_posts = Post.query.filter(Post.user_id == userId).all()
+    for post in user_posts:
+        check_liked = Like.query.filter(Like.post_id == post.id).first()
+        if check_liked:
+            liked_username = check_liked.user.username
+            liked_list.append({post.id: liked_username})
+        check_comments = Comment.query.filter(Comment.post_id == post.id).order_by(Comment.created_at.desc()).all()
+        if check_comments:
+            for check_comment in check_comments:
+                commented_username = check_comment.user.username
+                commented_list.append({post.id: commented_username})
+    if len(liked_list) > 4:
+        liked_list = liked_list[-4:]
+    if len(commented_list) > 4:
+        commented_list = commented_list[-4:]
+    notification_dict["likes"] = liked_list
+    notification_dict["comments"] = commented_list
+    check_follows = Follow.query.filter(Follow.follow_user_id == userId).all()
+    if check_follows:
+        for follow in check_follows:
+            follow_username = follow.user.username
+            follow_list.append(follow_username)
+        if len(follow_list) > 4:
+            follow_list = follow_list[-4:]
+        notification_dict["follows"] = follow_list
+    return {"notification": notification_dict}
 
 
 # Post routes
