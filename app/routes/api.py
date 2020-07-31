@@ -214,7 +214,16 @@ def get_liked_posts(userId):
 @bp.route("/posts")
 def get_all_posts():
     posts = Post.query.all()
-    posts_list = [post.to_dict() for post in posts]
+    posts_list = []
+    for post in posts:
+        creator = User.query.filter(User.id == post.user_id).first()
+        post_dict = post.to_dict()
+        post_dict["creator"] = creator.to_dict()["username"]
+        num_likes = Like.query.filter(Like.post_id == post_dict["id"]).count()
+        num_comments = Comment.query.filter(Comment.post_id == post_dict["id"]).count()
+        post_dict["numLikes"] = num_likes
+        post_dict["numComments"] = num_comments
+        posts_list.append(post_dict)
     return {"posts": posts_list}
 
 
