@@ -112,8 +112,9 @@ def get_user_information(userId):
         post_dict = post.to_dict()
         num_likes = Like.query.filter(Like.post_id == post_dict["id"]).count()
         num_comments = Comment.query.filter(Comment.post_id == post_dict["id"]).count()
-        post_dict["like_count"] = num_likes
+        post_dict["numLikes"] = num_likes
         post_dict["comment_count"] = num_comments
+        post_dict["profilePic"] = user.profile_pic_url
         post_list.append(post_dict)
     return {"num_posts": post_count, "posts": post_list, "followersList": followers_list, "numFollower": num_followers, "followsList": follows_list, "numFollow": num_follows, "user": user.to_dict() }
 
@@ -126,10 +127,13 @@ def get_user_notification(userId):
     follow_list = []
     user_posts = Post.query.filter(Post.user_id == userId).all()
     for post in user_posts:
+        post_dict = post.to_dict()
         check_liked = Like.query.filter(Like.post_id == post.id).first()
         if check_liked:
             liked_username = check_liked.user.username
-            liked_list.append({post.id: liked_username})
+            post_dict["username"] = liked_username
+            liked_list.append({post.id: post_dict})
+            # liked_list.append(post_dict)
         check_comments = Comment.query.filter(Comment.post_id == post.id).order_by(Comment.created_at.desc()).all()
         if check_comments:
             for check_comment in check_comments:
