@@ -131,18 +131,18 @@ def get_user_notification(userId):
         check_liked = Like.query.filter(Like.post_id == post.id).first()
         if check_liked:
             liked_username = check_liked.user.username
-            post_dict["username"] = liked_username
-            liked_list.append({post.id: post_dict})
+            # post_dict["username"] = liked_username
+            liked_list.append({post.id: liked_username})
             # liked_list.append(post_dict)
         check_comments = Comment.query.filter(Comment.post_id == post.id).order_by(Comment.created_at.desc()).all()
         if check_comments:
             for check_comment in check_comments:
                 commented_username = check_comment.user.username
                 commented_list.append({post.id: commented_username})
-    if len(liked_list) > 4:
-        liked_list = liked_list[-4:]
-    if len(commented_list) > 4:
-        commented_list = commented_list[-4:]
+    if len(liked_list) > 3:
+        liked_list = liked_list[-3:]
+    if len(commented_list) > 3:
+        commented_list = commented_list[-3:]
     liked_list.reverse()
     commented_list.reverse()
     notification_dict["likes"] = liked_list
@@ -150,10 +150,10 @@ def get_user_notification(userId):
     check_follows = Follow.query.filter(Follow.follow_user_id == userId).all()
     if check_follows:
         for follow in check_follows:
-            follow_username = follow.user.username
+            follow_username = follow.user.to_dict()
             follow_list.append(follow_username)
-        if len(follow_list) > 4:
-            follow_list = follow_list[-4:]
+        if len(follow_list) > 3:
+            follow_list = follow_list[-3:]
         notification_dict["follows"] = follow_list
     return {"notification": notification_dict}
 
@@ -238,6 +238,35 @@ def get_mainpage_post(userId):
 
             post_list.append(post_dict)
     return {"result": post_list}
+
+
+@bp.route("/posts/info/<int:postId>")
+def get_post_information(postId):
+    post = Post.query.filter(Post.id == postId).first()
+    post_dict = post.to_dict()
+    post_dict["user"] = post.user.to_dict()
+    comments = post.comment
+    comments_list = []
+
+    for comment in comments:
+        comment_dict = comment.to_dict()
+        comment_likes = Like.query.filter(Like.comment_id == comment.id).all()
+        user_list = []
+        for like in comment_likes:
+            user = like.user.to_dict()
+            user_list.append(user)
+        comment_dict['likes_comment'] = user_list
+        user = comment.user
+        comment_dict["username"] = user.to_dict()
+        comments_list.append(comment_dict)
+
+    likes = Like.query.filter(Like.post_id == postId).all()
+    user_list = []
+    for like in likes:
+        user = like.user.to_dict()
+        user_list.append(user)
+    
+    return {"post": post_dict, "comments": comments_list, "likes": user_list}
 
 
 @bp.route("/posts/<int:userId>")
