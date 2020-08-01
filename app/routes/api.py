@@ -125,16 +125,14 @@ def get_user_notification(userId):
     liked_list = []
     commented_list = []
     follow_list = []
-    user_posts = Post.query.filter(Post.user_id == userId).all()
+    user_posts = Post.query.filter(Post.user_id == userId).order_by(Post.created_at.asc()).all()
     for post in user_posts:
         post_dict = post.to_dict()
         check_liked = Like.query.filter(Like.post_id == post.id).first()
         if check_liked:
             liked_username = check_liked.user.username
-            # post_dict["username"] = liked_username
             liked_list.append({post.id: liked_username})
-            # liked_list.append(post_dict)
-        check_comments = Comment.query.filter(Comment.post_id == post.id).order_by(Comment.created_at.desc()).all()
+        check_comments = Comment.query.filter(Comment.post_id == post.id).all()
         if check_comments:
             for check_comment in check_comments:
                 commented_username = check_comment.user.username
@@ -339,15 +337,18 @@ def get_comment(postId):
 
 
 # Like routes
-@bp.route("/likes", methods=["POST"])
-def create_like():
+@bp.route("/createlike/<int:userId>", methods=["POST"])
+def create_like(userId):
     data = request.json
     try:
-        # if data["postId"]:
-        #     target_post = Post.query.filter(Post.id == data["postId"])
-        # check_existing =     
+        if data["postId"]:
+            post_likes = Like.query.filter(Like.post_id == data["postId"]).all()
+            for post_like in post_likes:
+                if(post_like.user_id == userId):
+                    return jsonify({"result": "already liked"}), 400
+
         like = Like(
-            user_id=data["userId"], post_id=data["postId"], comment_id=data["commentId"])
+            user_id=userId, post_id=data["postId"], comment_id=data["commentId"])
         db.session.add(like)
         db.session.commit()
         return jsonify({"like": "like created"})
