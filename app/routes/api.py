@@ -136,77 +136,40 @@ def get_user_notification(userId):
         follows_dict = follow.to_dict()
         user = follow.user.to_dict()
         follows_dict['user'] = user
+        follows_dict['type'] = 'follow'
+        follows_dict['created_at'] = follow.created_at
         follows_list.append(follows_dict)
 
-    # comment_likes = Like.query.filter(Like.likeable_id.in_(user_comment_ids)).filter(Like.likeable_type == "comment").order_by(Like.created_at.desc()).all()
     likes = Like.query.filter(Like.post_id.in_(user_post_ids)).order_by(Like.created_at.desc()).all()
 
     for like in likes:
         like_dict = {}
-        # like_dict = like.to_dict()
         user = like.user.to_dict()
-        # post = Post.query.filter(Post.id == like.post_id).first().to_dict()
         post = like.post.to_dict()
         like_dict['user'] = user
         like_dict['post'] = post
+        like_dict['type'] = 'like'
+        like_dict['created_at'] = like.created_at
         likes_list.append(like_dict)
 
     comments = Comment.query.filter(Comment.post_id.in_(user_post_ids)).order_by(Comment.created_at.desc()).all()
 
     for comment in comments:
-        # comment_dict = comment.to_dict()
         comment_dict = {}
         user = comment.user.to_dict()
         post = comment.post.to_dict()
         comment_dict['user'] = user
-        comment_dict['post'] = post 
+        comment_dict['post'] = post
+        comment_dict['type'] = 'comment'
+        comment_dict['created_at'] = comment.created_at
         comments_list.append(comment_dict)
 
-    # note_list = follows_list + likes_list + comments_list
-    notification_dict = {}
-    notification_dict['follows'] = follows_list
-    notification_dict['likes'] = likes_list 
-    notification_dict['comments'] = comments_list
+    notification_list = follows_list + likes_list + comments_list
     
-    # sorted_note_list = sorted(note_list, key=lambda note: note['created_at'])
-    # sorted_note_list.reverse()
+    sorted_note_list = sorted(notification_list, key=lambda notification_list: notification_list['created_at'])
+    sorted_note_list.reverse()
 
-    return {"notifications": notification_dict}
-
-    # notification_dict = {}
-    # liked_list = []
-    # commented_list = []
-    # follow_list = []
-    # user_posts = Post.query.filter(Post.user_id == userId).order_by(Post.created_at.desc()).all()
-    # for post in user_posts:
-    #     post_dict = post.to_dict()
-    #     check_likes = Like.query.filter(Like.post_id == post.id).filter(Like.user_id != userId).order_by(Like.created_at.desc()).all()
-    #     if check_likes:
-    #         for check_like in check_likes:
-    #             liked_user = check_like.user.to_dict()
-    #             liked_list.append({post.id: liked_user})
-    #     check_comments = Comment.query.filter(Comment.post_id == post.id).filter(Comment.user_id != userId).order_by(Comment.created_at.desc()).all()
-    #     if check_comments:
-    #         for check_comment in check_comments:
-    #             commented_user = check_comment.user.to_dict()
-    #             commented_list.append({post.id: commented_user})
-    # if len(liked_list) > 3:
-    #     liked_list = liked_list[-3:]
-    # if len(commented_list) > 3:
-    #     commented_list = commented_list[-3:]
-    # liked_list.reverse()
-    # commented_list.reverse()
-    # notification_dict["likes"] = liked_list
-    # notification_dict["comments"] = commented_list
-    # check_follows = Follow.query.filter(Follow.follow_user_id == userId).all()
-    # if check_follows:
-    #     for follow in check_follows:
-    #         follow_username = follow.user.to_dict()
-    #         follow_list.append(follow_username)
-    #     if len(follow_list) > 3:
-    #         follow_list = follow_list[-3:]
-    #     notification_dict["follows"] = follow_list
-    # return {"notification": notification_dict}
+    return {"notifications": sorted_note_list}
 
 
 # Post routes
