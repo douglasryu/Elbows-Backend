@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from datetime import date
+from sqlalchemy import func
 import jwt
 
 from ..models import db
@@ -36,7 +37,7 @@ def signup_user():
         return {"error": "Passwords do not match"}, 400
         
     user = User(name=data["name"], username=data["username"], email=data['email'], profile_pic_url="https://elbows.s3.us-east-2.amazonaws.com/uploads/avatar.jpg", bio=data["bio"],
-                password=data['password'], created_at=date.today(), updated_at=date.today())
+                password=data['password'], created_at=func.now(), updated_at=func.now())
     db.session.add(user)
     db.session.commit()
     access_token = jwt.encode({'email': user.email}, Configuration.SECRET_KEY)
@@ -121,39 +122,91 @@ def get_user_information(userId):
 
 @bp.route("/notification/<int:userId>")
 def get_user_notification(userId):
+    follows_list = []
+    likes_list = []
+    comments_list = []
+
+    user = User.query.filter(User.id == userId).first()
+    user_post_ids = list(map(lambda post: post.id, user.post))
+    user_comment_ids = list(map(lambda comment: comment.id, user.comment))
+
+    follows = Follow.query.filter(Follow.follow_user_id == userId).order_by(Follow.created_at.desc()).all()
+
+    for follow in follows:
+        follows_dict = follow.to_dict()
+        user = follow.user.to_dict()
+        follows_dict['user'] = user
+        follows_list.append(follows_dict)
+
+    # comment_likes = Like.query.filter(Like.likeable_id.in_(user_comment_ids)).filter(Like.likeable_type == "comment").order_by(Like.created_at.desc()).all()
+    likes = Like.query.filter(Like.post_id.in_(user_post_ids)).order_by(Like.created_at.desc()).all()
+
+    for like in likes:
+        like_dict = {}
+        # like_dict = like.to_dict()
+        user = like.user.to_dict()
+        # post = Post.query.filter(Post.id == like.post_id).first().to_dict()
+        post = like.post.to_dict()
+        like_dict['user'] = user
+        like_dict['post'] = post
+        likes_list.append(like_dict)
+
+    comments = Comment.query.filter(Comment.post_id.in_(user_post_ids)).order_by(Comment.created_at.desc()).all()
+
+    for comment in comments:
+        # comment_dict = comment.to_dict()
+        comment_dict = {}
+        user = comment.user.to_dict()
+        post = comment.post.to_dict()
+        comment_dict['user'] = user
+        comment_dict['post'] = post 
+        comments_list.append(comment_dict)
+
+    # note_list = follows_list + likes_list + comments_list
     notification_dict = {}
-    liked_list = []
-    commented_list = []
-    follow_list = []
-    user_posts = Post.query.filter(Post.user_id == userId).order_by(Post.created_at.asc()).all()
-    for post in user_posts:
-        post_dict = post.to_dict()
-        check_liked = Like.query.filter(Like.post_id == post.id).first()
-        if check_liked:
-            liked_username = check_liked.user.username
-            liked_list.append({post.id: liked_username})
-        check_comments = Comment.query.filter(Comment.post_id == post.id).all()
-        if check_comments:
-            for check_comment in check_comments:
-                commented_username = check_comment.user.username
-                commented_list.append({post.id: commented_username})
-    if len(liked_list) > 3:
-        liked_list = liked_list[-3:]
-    if len(commented_list) > 3:
-        commented_list = commented_list[-3:]
-    liked_list.reverse()
-    commented_list.reverse()
-    notification_dict["likes"] = liked_list
-    notification_dict["comments"] = commented_list
-    check_follows = Follow.query.filter(Follow.follow_user_id == userId).all()
-    if check_follows:
-        for follow in check_follows:
-            follow_username = follow.user.to_dict()
-            follow_list.append(follow_username)
-        if len(follow_list) > 3:
-            follow_list = follow_list[-3:]
-        notification_dict["follows"] = follow_list
-    return {"notification": notification_dict}
+    notification_dict['follows'] = follows_list
+    notification_dict['likes'] = likes_list 
+    notification_dict['comments'] = comments_list
+    
+    # sorted_note_list = sorted(note_list, key=lambda note: note['created_at'])
+    # sorted_note_list.reverse()
+
+    return {"notifications": notification_dict}
+
+    # notification_dict = {}
+    # liked_list = []
+    # commented_list = []
+    # follow_list = []
+    # user_posts = Post.query.filter(Post.user_id == userId).order_by(Post.created_at.desc()).all()
+    # for post in user_posts:
+    #     post_dict = post.to_dict()
+    #     check_likes = Like.query.filter(Like.post_id == post.id).filter(Like.user_id != userId).order_by(Like.created_at.desc()).all()
+    #     if check_likes:
+    #         for check_like in check_likes:
+    #             liked_user = check_like.user.to_dict()
+    #             liked_list.append({post.id: liked_user})
+    #     check_comments = Comment.query.filter(Comment.post_id == post.id).filter(Comment.user_id != userId).order_by(Comment.created_at.desc()).all()
+    #     if check_comments:
+    #         for check_comment in check_comments:
+    #             commented_user = check_comment.user.to_dict()
+    #             commented_list.append({post.id: commented_user})
+    # if len(liked_list) > 3:
+    #     liked_list = liked_list[-3:]
+    # if len(commented_list) > 3:
+    #     commented_list = commented_list[-3:]
+    # liked_list.reverse()
+    # commented_list.reverse()
+    # notification_dict["likes"] = liked_list
+    # notification_dict["comments"] = commented_list
+    # check_follows = Follow.query.filter(Follow.follow_user_id == userId).all()
+    # if check_follows:
+    #     for follow in check_follows:
+    #         follow_username = follow.user.to_dict()
+    #         follow_list.append(follow_username)
+    #     if len(follow_list) > 3:
+    #         follow_list = follow_list[-3:]
+    #     notification_dict["follows"] = follow_list
+    # return {"notification": notification_dict}
 
 
 # Post routes
@@ -162,7 +215,7 @@ def create_post():
     data = request.json
     try:
         post = Post(user_id=data["userId"], location=data["location"], post_image=data["postImage"],
-                    post_body=data["postBody"], created_at=date.today(), updated_at=date.today())
+                    post_body=data["postBody"], created_at=func.now(), updated_at=func.now())
         db.session.add(post)
         db.session.commit()
         return jsonify({"post": "post created"})
@@ -315,7 +368,7 @@ def create_comment():
     data = request.json
     try:
         comment = Comment(user_id=data["userId"], user_name=data["userName"], post_id=data["postId"],
-                          comment_body=data["commentBody"], created_at=date.today(), updated_at=date.today())
+                          comment_body=data["commentBody"], created_at=func.now(), updated_at=func.now())
         db.session.add(comment)
         db.session.commit()
         return jsonify({"comment": "comment created"})
@@ -348,7 +401,7 @@ def create_like(userId):
                     return jsonify({"result": "already liked"}), 400
 
         like = Like(
-            user_id=userId, post_id=data["postId"], comment_id=data["commentId"])
+            user_id=userId, post_id=data["postId"], comment_id=data["commentId"], created_at=func.now(), updated_at=func.now())
         db.session.add(like)
         db.session.commit()
         return jsonify({"like": "like created"})
@@ -388,7 +441,7 @@ def create_follow():
         return {"error": "Already following!"}, 400
     try:
         follow = Follow(user_id=data["userId"],
-                        follow_user_id=data["followUserId"])
+                        follow_user_id=data["followUserId"], created_at=func.now(), updated_at=func.now())
         db.session.add(follow)
         db.session.commit()
         return jsonify({"follow": "follow created"})

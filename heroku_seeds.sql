@@ -20,10 +20,10 @@ VALUES
     (2, 'Pittsburgh', 'https://elbows.s3.us-east-2.amazonaws.com/uploads/97.jpg', 'PNC Park', NOW(), NOW()),
     (1, 'New York', 'https://elbows.s3.us-east-2.amazonaws.com/uploads/754.jpg', 'Hello', NOW(), NOW());
 
-INSERT INTO follows (user_id, follow_user_id)
+INSERT INTO follows (user_id, follow_user_id, created_at, updated_at)
 VALUES
-    (1, 2),
-    (2, 1);
+    (1, 2, NOW(), NOW()),
+    (2, 1, NOW(), NOW());
 
 -- INSERT INTO COMMENTS (user_id, user_name, post_id, comment_body, created_at, updated_at)
 -- VALUES

@@ -1,4 +1,5 @@
 from . import db
+from sqlalchemy import func
 
 
 class Like(db.Model):
@@ -8,6 +9,10 @@ class Like(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     post_id = db.Column(db.Integer, db.ForeignKey('posts.id'))
     comment_id = db.Column(db.Integer, db.ForeignKey('comments.id'))
+    created_at = db.Column(db.DateTime(timezone=True),
+                           server_default=func.now(), nullable=False)
+    updated_at = db.Column(db.DateTime(
+        timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 
     user = db.relationship("User", back_populates="like")
     post = db.relationship("Post", back_populates="like")
