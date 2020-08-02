@@ -223,9 +223,15 @@ def get_mainpage_post(userId):
             likes = Like.query.filter(Like.post_id == post.id).all()
             post_dict['numLikes'] = len(likes)
             likes_list = []
+            check_user_liked = False
             for like in likes:
+                if like.user_id == userId:
+                    check_user_liked = True
+                else:
+                    check_user_liked = False
                 likes_list.append(like.user.to_dict())
             post_dict['likesList'] = likes_list
+            post_dict['check_user_liked'] = check_user_liked
             
             comments = post.comment
             comments_list = []
@@ -254,8 +260,8 @@ def get_mainpage_post(userId):
     return {"result": post_list}
 
 
-@bp.route("/posts/info/<int:postId>")
-def get_post_information(postId):
+@bp.route("/posts/info/<int:userId>/<int:postId>")
+def get_post_information(userId, postId):
     post = Post.query.filter(Post.id == postId).first()
     post_dict = post.to_dict()
     post_dict["user"] = post.user.to_dict()
@@ -276,7 +282,13 @@ def get_post_information(postId):
 
     likes = Like.query.filter(Like.post_id == postId).all()
     user_list = []
+    check_user_liked = False
     for like in likes:
+        if like.user_id == userId:
+            check_user_liked = True
+        else:
+            check_user_liked = False
+        post_dict['check_user_liked'] = check_user_liked
         user = like.user.to_dict()
         user_list.append(user)
     
