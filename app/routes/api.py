@@ -52,6 +52,16 @@ def get_user_name(userId):
     return {"userName": user_name}
 
 
+@bp.route("/users/search")
+def get_all_user_information():
+    users = User.query.all()
+    user_list = []
+    for user in users:
+        user_dict = user.to_dict()
+        user_list.append(user_dict)
+    return {"search": user_list}
+
+
 @bp.route("/users/session", methods=['POST'])
 def signin_user():
     data = request.json
