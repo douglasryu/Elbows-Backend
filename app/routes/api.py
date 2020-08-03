@@ -62,6 +62,12 @@ def get_all_user_information():
     return {"search": user_list}
 
 
+@bp.route("/user/search/<username>")
+def get_user_id(username):
+    user = User.query.filter(User.username == username).first()
+    return {"userId": user.id}
+
+
 @bp.route("/users/session", methods=['POST'])
 def signin_user():
     data = request.json
@@ -233,7 +239,7 @@ def get_mainpage_post(userId):
             likes = Like.query.filter(Like.post_id == post.id).all()
             post_dict['numLikes'] = len(likes)
             likes_list = []
-            check_user_liked = False
+            check_user_liked = None
             for like in likes:
                 if like.user_id == userId:
                     check_user_liked = True
