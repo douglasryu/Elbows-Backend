@@ -31,8 +31,3 @@ def create_presigned_post(object_name, bucket_name=BUCKET,
         return None
     return response
 
-
-
-
-
-
