@@ -224,8 +224,7 @@ def get_mainpage_post(userId):
     
     follows = Follow.query.filter(Follow.user_id == userId).all()
     for follow in follows:
-        posts = Post.query.filter((Post.user_id == follow.follow_user_id) | (Post.user_id == userId)).all()
-        
+        posts = Post.query.filter(Post.user_id == follow.follow_user_id).all()
         found_users = {}
         for post in posts:
             post_dict = post.to_dict()
@@ -239,7 +238,7 @@ def get_mainpage_post(userId):
             likes = Like.query.filter(Like.post_id == post.id).all()
             post_dict['numLikes'] = len(likes)
             likes_list = []
-            check_user_liked = None
+            check_user_liked = False
             for like in likes:
                 if like.user_id == userId:
                     check_user_liked = True
