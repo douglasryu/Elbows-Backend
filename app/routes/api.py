@@ -297,11 +297,11 @@ def get_post_information(userId, postId):
 
     likes = Like.query.filter(Like.post_id == postId).all()
     user_list = []
-    check_user_liked = False
+    check_user_liked = None
     for like in likes:
         if like.user_id == userId:
             check_user_liked = True
-        else:
+        elif like.user_id != userId:
             check_user_liked = False
         post_dict['check_user_liked'] = check_user_liked
         user = like.user.to_dict()
@@ -374,6 +374,17 @@ def get_comment(postId):
             Comment.post_id == postId).all()
         comments = [comment.to_dict() for comment in fetched_comments]
         return jsonify({"comments": comments})
+    except AssertionError as message:
+        print(str(message))
+        return jsonify({"error": str(message)}), 400
+
+@bp.route("/comments/delete/<int:commentId>")
+def delete_comment(commentId):
+    try:
+        comment_to_delete = Comment.query.filter(Comment.id == commentId).first()
+        db.session.delete(comment_to_delete)
+        db.session.commit()
+        return jsonify({"delete": "delete success"})
     except AssertionError as message:
         print(str(message))
         return jsonify({"error": str(message)}), 400
