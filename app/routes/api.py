@@ -238,14 +238,14 @@ def get_mainpage_post(userId):
             likes = Like.query.filter(Like.post_id == post.id).all()
             post_dict['numLikes'] = len(likes)
             likes_list = []
-            check_user_liked = False
+            check_user_liked = None
             for like in likes:
                 if like.user_id == userId:
                     check_user_liked = True
-                else:
-                    check_user_liked = False
                 likes_list.append(like.user.to_dict())
             post_dict['likesList'] = likes_list
+            if check_user_liked == None:
+                check_user_liked = False
             post_dict['check_user_liked'] = check_user_liked
             
             comments = post.comment
@@ -301,11 +301,11 @@ def get_post_information(userId, postId):
     for like in likes:
         if like.user_id == userId:
             check_user_liked = True
-        elif like.user_id != userId:
-            check_user_liked = False
-        post_dict['check_user_liked'] = check_user_liked
         user = like.user.to_dict()
         user_list.append(user)
+    if check_user_liked == None:
+        check_user_liked = False
+    post_dict['check_user_liked'] = check_user_liked
     
     return {"post": post_dict, "comments": comments_list, "likes": user_list}
 
