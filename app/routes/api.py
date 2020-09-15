@@ -480,3 +480,15 @@ def get_follow(userId):
     except AssertionError as message:
         print(str(message))
         return jsonify({"error": str(message)}), 400
+
+
+@bp.route("/unfollow/<int:userId>/<int:unfollowId>", methods=["POST"])
+def unfollow(userId, unfollowId):
+    try:
+        target_follow = Follow.query.filter(Follow.user_id == userId).filter(Follow.follow_user_id == unfollowId).first()
+        db.session.delete(target_follow)
+        db.session.commit()
+        return jsonify({"unfollow": "successfully unfollowed"}), 200
+    except AssertionError as message:
+        print(str(message))
+        return jsonify({"error": str(message)}), 400
