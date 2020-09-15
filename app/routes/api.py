@@ -419,6 +419,18 @@ def create_like(userId):
         return jsonify({"error": str(message)}), 400
 
 
+@bp.route("/unlike/<int:userId>/<int:postId>", methods=["POST"])
+def unlike(userId, postId):
+    try:
+        target_like = Like.query.filter(Like.user_id == userId).filter(Like.post_id == postId).first()
+        db.session.delete(target_like)
+        db.session.commit()
+        return jsonify({"unlike": "successfully unliked"}), 200
+    except AssertionError as message:
+        print(str(message))
+        return jsonify({"error": str(message)}), 400
+
+
 @bp.route("/likes/<int:postId>")
 def get_post_like(postId):
     try:
