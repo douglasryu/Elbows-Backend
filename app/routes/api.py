@@ -117,10 +117,18 @@ def get_user_information(userId):
     post_list = []
 
     for follower in followers:
-        followers_list.append(follower.to_dict())
+        follower_dict = follower.to_dict()
+        follower_dict["name"] = follower.user.name
+        follower_dict["pic"] = follower.user.profile_pic_url
+        followers_list.append(follower_dict)
 
     for follow in follows:
-        follows_list.append(follow.to_dict())
+        follow_dict = follow.to_dict()
+        followee_id = follow.follow_user_id
+        followee_user = User.query.filter(User.id == followee_id).first()
+        follow_dict["name"] = followee_user.name
+        follow_dict["pic"] = followee_user.profile_pic_url
+        follows_list.append(follow_dict)
 
     num_followers = len(followers_list)
     num_follows = len(follows_list)
