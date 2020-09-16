@@ -1,5 +1,6 @@
 import os
 import boto3
+from botocore.config import Config
 from random import randrange
 from flask import Blueprint, request
 from ..models import db
@@ -16,7 +17,12 @@ BUCKET = "elbows"
 @bp.route("/presign/<object_name>")
 def create_presigned_post(object_name, bucket_name=BUCKET,
                           fields=None, conditions=None, expiration=3600):
-    s3_client = boto3.client('s3')
+    my_config = Config(
+        region_name='us-east-2',
+        signature_version = 's3v4',
+    )
+
+    s3_client = boto3.client('s3', config=my_config)
     try:
         file_name, mime_type = object_name.split(".")
         object_name = f"uploads/{randrange(10000)}.{mime_type}"
